@@ -1,30 +1,12 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-    username: { 
-        type: String, 
-        required: true, 
-        unique: true 
-    },
-    password: { 
-        type: String,
-        required: true 
-    },
-    email: { 
-        type: String, 
-        required: true, 
-        unique: true,
-        trim: true,
-        lowercase: true,
-    },
-    isVerified: { // 🆕 Add this field for email verification
-        type: Boolean,
-        default: false,
-    },
-    createdAt: { 
-        type: Date, 
-        default: Date.now 
-    }
+  username: { type: String },
+  email: { type: String, required: true, unique: true },
+  password: { type: String },
+  isVerified: { type: Boolean, default: false }, // ✅ new
+  otp: { type: String },                         // ✅ new
+  otpExpiresAt: { type: Date }                   // ✅ new
 });
 
 module.exports = mongoose.model('User', userSchema);
