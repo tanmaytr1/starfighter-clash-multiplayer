@@ -30,7 +30,7 @@ const Login = () => {
             const res = await axios.post('http://localhost:4000/api/auth/login', formData, { withCredentials: true });
             setMessage(res.data.message);
             // Redirect the user to the dashboard upon successful login
-            navigate('/dashboard'); 
+            navigate('/starscreen'); 
         } catch (err) {
             // Display the error message from the backend if the request fails
             setMessage(err.response?.data?.message || 'Something went wrong.');

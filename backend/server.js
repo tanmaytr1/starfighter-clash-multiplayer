@@ -4,7 +4,7 @@ const dotenv = require('dotenv'); //
 const session = require('express-session');
 const passport = require('passport');
 const authRoutes = require('./routes/auth');
-const profileRoutes = require('./routes/profile'); 
+const apiRoutes = require('./routes/api'); 
 const cors = require('cors');
 
 // 🆕 Import the modularized database and passport config
@@ -38,7 +38,7 @@ passportConfig(passport);
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/profile', profileRoutes); // Use the new protected route
+app.use('/api', apiRoutes); // Add your new API routes
 
 
 app.listen(PORT, () => {

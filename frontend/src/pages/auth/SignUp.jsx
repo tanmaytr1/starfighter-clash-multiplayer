@@ -21,11 +21,11 @@ const Signup = () => {
     try {
       const res = await axios.post("http://localhost:4000/api/auth/register", formData);
       setMessage(res.data.message);
-      
+
       // On successful registration, show the OTP modal
       setEmailForOtp(email);
       setShowOtpModal(true);
-      
+
     } catch (err) {
       setMessage(err.response?.data?.message || "Something went wrong.");
     }
@@ -73,7 +73,7 @@ const Signup = () => {
           email={emailForOtp}
           onVerified={() => {
             setShowOtpModal(false);
-            navigate("/dashboard"); // Redirect after successful verification
+            navigate("/starscreen"); // Redirect after successful verification
           }}
         />
       )}

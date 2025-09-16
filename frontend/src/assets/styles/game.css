@@ -1,0 +1,16 @@
+html,
+body,
+#root,
+.game-container {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: #000;
+    cursor: none;
+}
+
+canvas {
+    display: block;
+}
