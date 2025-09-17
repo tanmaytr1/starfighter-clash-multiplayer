@@ -1,40 +1,41 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-
-// Import your page components
+import ProtectedRoute from './components/ProtectedRoute'; // Import your new ProtectedRoute
+// Import all your components
 import StarScreen from './pages/game/StarScreen';
-import Profile from './pages/game/Profile';
-import Setting from './pages/game/Setting';
-import NotFound from './pages/game/NotFound';
-import Play from './game/Play';
+import Dashboard from './pages/game/Dashboard';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
-import Dashboard from './pages/game/Dashboard';
-
-import './style.css'; // Ensure you're importing your styles
+import Profile from './pages/game/Profile';
+import Setting from './pages/game/Setting';
+import Play from './game/Play';
+import NotFound from './pages/game/NotFound';
+import { AuthProvider } from "./context/AuthContext";
+import PublicRoute from './components/PublicRoute';
 
 const App = () => {
   return (
-    <div>
-      <Router>
+    <Router>
+      <AuthProvider>
         <Routes>
-          {/* Authentication Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          {/* Public Routes - Accessible to all */}
+          <Route path="/" element={<StarScreen />} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
 
-          {/* Game/Application Routes */}
-          <Route path="/starscreen" element={<StarScreen />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/setting" element={<Setting />} />
-          <Route path="/play" element={<Play />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          {/* Protected Routes - Only accessible if logged in */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/setting" element={<ProtectedRoute><Setting /></ProtectedRoute>} />
+          <Route path="/play" element={<ProtectedRoute><Play /></ProtectedRoute>} />
 
-          {/* Catch-all for undefined routes */}
+          {/* Catch-all for 404 Not Found */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </Router>
-    </div>
+      </AuthProvider>
+    </Router>
   );
 };
+
 
 export default App;

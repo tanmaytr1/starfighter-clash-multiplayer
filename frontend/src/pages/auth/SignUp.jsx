@@ -73,7 +73,7 @@ const Signup = () => {
           email={emailForOtp}
           onVerified={() => {
             setShowOtpModal(false);
-            navigate("/starscreen"); // Redirect after successful verification
+            navigate("/"); // Redirect after successful verification
           }}
         />
       )}

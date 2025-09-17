@@ -6,7 +6,16 @@ import axios from 'axios';
 // ============================
 // This allows us to share auth state (like user info & login status)
 // across all components without passing props manually.
-const AuthContext = createContext();
+export const AuthContext = createContext({
+    isAuthenticated: false,
+    user: null,
+    loading: true,
+    // Provide empty functions to avoid crashes
+    setIsAuthenticated: () => { },
+    setUser: () => { },
+    logout: () => { }
+});
+
 
 // ============================
 // Create a Provider Component
@@ -26,28 +35,31 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                // Send a GET request to the backend to verify session
-                const res = await axios.get('http://localhost:4000/api/auth/status', { 
-                    withCredentials: true // Include cookies (session info)
+                const res = await axios.get('http://localhost:4000/api/auth/status', {
+                    withCredentials: true
                 });
-                
+
                 if (res.status === 200) {
-                    // If backend says the user is logged in:
-                    setIsAuthenticated(true); // Mark user as logged in
-                    setUser(res.data.user);   // Store user info
+                    setIsAuthenticated(true);
+                    setUser(res.data.user);
                 }
             } catch (err) {
-                // If request fails (not logged in or session expired):
-                setIsAuthenticated(false);
-                setUser(null);
+                if (err.response?.status === 401) {
+                    // User not logged in → not an actual error, just set state
+                    setIsAuthenticated(false);
+                    setUser(null);
+                } else {
+                    // Only log unexpected errors
+                    console.error('Unexpected auth check error:', err);
+                }
             } finally {
-                // Stop the loading spinner / state
                 setLoading(false);
             }
         };
 
-        checkAuth(); // Run the function when component mounts
-    }, []); // Empty dependency array = run only once
+        checkAuth();
+    }, []);
+
 
     // ============================
     // Logout function
@@ -55,7 +67,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         try {
             // Call backend logout API (destroys session)
-            await axios.get('http://localhost:4000/api/auth/logout', { withCredentials: true });
+            await axios.post('http://localhost:4000/api/auth/logout', {}, { withCredentials: true });
             // Clear frontend auth state
             setIsAuthenticated(false);
             setUser(null);
@@ -68,14 +80,14 @@ export const AuthProvider = ({ children }) => {
     // Provide auth info and functions to all child components
     // ============================
     return (
-        <AuthContext.Provider 
-            value={{ 
+        <AuthContext.Provider
+            value={{
                 isAuthenticated, // true/false
                 user,            // user info object
                 loading,         // loading state
                 setIsAuthenticated, // function to manually update login status
                 setUser,            // function to manually update user info
-                logout             // logout function
+                logout              // logout function
             }}
         >
             {children} {/* Render all child components */}

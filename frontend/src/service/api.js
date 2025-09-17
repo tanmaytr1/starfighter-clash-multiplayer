@@ -9,8 +9,11 @@ const API = axios.create({
 //auth api
 export const registerUser = (data) => API.post('/auth/register', data);
 export const loginUser = (data) => API.post('/auth/login', data);
-export const logoutUser = () => API.post('/auth/logout');
+export const logoutUser = () => API.post('/auth/logout', {});   
 export const getProfile = () => API.get('/profile');
+export const createRoom = (data) => API.post('/rooms/create', data);
+export const findRoomById = (roomId) => API.get(`/rooms/${roomId}`);
+export const joinRoom = (data) => API.post('/rooms/join', data);
 
 export default API;
 

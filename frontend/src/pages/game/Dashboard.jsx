@@ -1,49 +1,102 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext'; // Import useAuth hook
+import { createRoom } from '../../service/api';
+import Room from './Room';
+import JoinRoomModal from '../../components/JoinRoomModal';
 
 const Dashboard = () => {
-  const [rooms, setRooms] = useState([]);
+  const navigate = useNavigate();
+  const { isAuthenticated, user, loading } = useAuth(); // Destructure auth state from the context
+
+  const [showModal, setShowModal] = useState(false);
+  const [currentRoom, setCurrentRoom] = useState(null);
+  const [createRoomForm, setCreateRoomForm] = useState({
+    roomName: '',
+    mode: 'free war',
+    maxPlayers: 2
+  });
   const [message, setMessage] = useState('');
 
+  // Use a useEffect hook to log the authentication status
   useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const res = await axios.get('http://localhost:4000/api/rooms', { withCredentials: true });
-        setRooms(res.data);
-      } catch (err) {
-        setMessage('Failed to load game rooms.');
-        console.error(err);
-      }
-    };
+    console.log("Dashboard - Authentication status:", isAuthenticated);
+    console.log("Dashboard - User data:", user);
+    console.log("Dashboard - Loading status:", loading);
+  }, [isAuthenticated, user, loading]);
 
-    fetchRooms();
-  }, []);
-
-  const createRoom = () => {
-    setMessage('Creating new room...');
+  const handleCreateRoom = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await createRoom(createRoomForm);
+      setMessage(`Room "${res.room.roomName}" created with ID: ${res.room.roomId}`);
+      setCurrentRoom(res.room);
+    } catch (err) {
+      setMessage(err.response?.data?.message || 'Failed to create room.');
+    }
   };
+
+  const handleRoomJoined = (roomData) => {
+    setCurrentRoom(roomData);
+    setShowModal(false);
+  };
+
+  if (currentRoom) {
+    return <Room roomData={currentRoom} />;
+  }
+
+  // You can also use conditional rendering based on the loading state
+  if (loading) {
+    return <div>Loading Dashboard...</div>;
+  }
+
+  // This check should not be necessary due to ProtectedRoute,
+  // but it's good for robustness.
+  if (!isAuthenticated) {
+    navigate('/login');
+    return null;
+  }
 
   return (
     <div>
-      <h2>Dashboard</h2>
-      <button onClick={createRoom}>Create New Game Room</button>
+      <h1>Lobby</h1>
+      <p>{message}</p>
+      <div style={{ display: 'flex', gap: '50px' }}>
+        {/* Create Room Section */}
+        <div>
+          <h3>Create a Room</h3>
+          <form onSubmit={handleCreateRoom}>
+            <input
+              type="text"
+              placeholder="Room Name"
+              value={createRoomForm.roomName}
+              onChange={(e) => setCreateRoomForm({ ...createRoomForm, roomName: e.target.value })}
+            />
+            <select
+              value={createRoomForm.mode}
+              onChange={(e) => setCreateRoomForm({ ...createRoomForm, mode: e.target.value })}
+            >
+              <option value="freewar">Free-for-all</option>
+              <option value="team">Team Deathmatch</option>
+            </select>
+            <input
+              type="number"
+              placeholder="Max Players"
+              value={createRoomForm.maxPlayers}
+              onChange={(e) => setCreateRoomForm({ ...createRoomForm, maxPlayers: e.target.value })}
+            />
+            <button type="submit">Create Room</button>
+          </form>
+        </div>
 
-      {message && <p>{message}</p>}
+        {/* Join Room Section */}
+        <div>
+          <h3>Join a Room</h3>
+          <button onClick={() => setShowModal(true)}>Join a Room</button>
+        </div>
+      </div>
 
-      <h3>Join an Existing Game</h3>
-      {rooms.length > 0 ? (
-        <ul>
-          {rooms.map(room => (
-            <li key={room._id}>
-              Room ID: {room.roomId} ({room.players.length} players)
-              <Link to={`/play/${room.roomId}`}>Join</Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No active game rooms. Start one!</p>
-      )}
+      {showModal && <JoinRoomModal onClose={() => setShowModal(false)} onJoin={handleRoomJoined} />}
     </div>
   );
 };

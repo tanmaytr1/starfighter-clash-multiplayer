@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext'; // Import useAuth to access the context
 
 const Login = () => {
     // State to hold the form input data
@@ -12,6 +13,9 @@ const Login = () => {
     const [message, setMessage] = useState('');
     // Hook to programmatically navigate to different routes
     const navigate = useNavigate();
+
+    // Use the useAuth hook to get functions for updating authentication state
+    const { setIsAuthenticated, setUser } = useAuth();
 
     // Destructure formData for easier access
     const { username, password } = formData;
@@ -26,11 +30,17 @@ const Login = () => {
         e.preventDefault();
         try {
             // Send a POST request to the backend's login endpoint
-            // withCredentials: true is crucial for sending the session cookie
             const res = await axios.post('http://localhost:4000/api/auth/login', formData, { withCredentials: true });
+
+            // On successful login, update the context state directly
+            setIsAuthenticated(true);
+            setUser(res.data.user); // Assuming the backend returns user data
+
             setMessage(res.data.message);
+
             // Redirect the user to the dashboard upon successful login
-            navigate('/starscreen'); 
+            navigate('/dashboard');
+
         } catch (err) {
             // Display the error message from the backend if the request fails
             setMessage(err.response?.data?.message || 'Something went wrong.');
